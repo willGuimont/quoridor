@@ -10,13 +10,16 @@ type
     Player = object
         walls: int
         position: Position
-    Turn = enum
+    Turn* = enum
         PLAYER_1
         PLAYER_2
     Quoridor = object
         turn: Turn
         players: array[Turn, Player]
         board: Graph
+
+proc currentTurn*(q: Quoridor): Turn {.inline.} =
+    q.turn
 
 proc xyToNodeIndex(x, y: int) : int =
     return x + boardSize * y
@@ -57,19 +60,17 @@ proc hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
         if board.hasPathBetween(p, endIndex):
             return true
     return false
-    
-        
 
-proc move*(q: var Quoridor, turn: Turn, x, y: int) =
-    var player = q.players[turn]
+proc move*(q: var Quoridor, x, y: int) =
+    var player = q.players[q.turn]
     var pos = (x, y)
     if q.board.hasEdge(player.position.posToNodeIndex, pos.posToNodeIndex) and hasPathToEnd(q.board, player.position, q.turn):
         player.position = pos
-        q.players[turn] = player
+        q.players[q.turn] = player
         q.turn = case q.turn
             of PLAYER_1:
                 PLAYER_2
             of PLAYER_2:
                 PLAYER_1
     else:
-        raise newException(ValueError, "player $1 cannot move to $2" % [$turn, $pos])    
+        raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $pos])    

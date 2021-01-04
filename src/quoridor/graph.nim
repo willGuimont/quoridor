@@ -41,6 +41,4 @@ proc createFloydIfNone(graph: var Graph) =
 
 proc hasPathBetween*(graph: var Graph, a, b: int) : bool =
     createFloydIfNone(graph)
-    
-    echo graph.floyd
     return graph.floyd.get[a][b] != infinity
