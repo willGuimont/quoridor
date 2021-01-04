@@ -1,0 +1,12 @@
+### Code ###
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+*.code-workspace
+
+### Nim ###
+nimcache/
+nimblecache/
+htmldocs/
+bin
+
