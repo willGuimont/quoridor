@@ -15,6 +15,11 @@ proc addEdge*(graph: var Graph, a, b: int) =
     graph.graph[b][a] = 1
     graph.floyd = none(seq[seq[int]])
 
+proc removeEdge*(graph: var Graph, a, b: int) =
+    graph.graph[a][b] = 0
+    graph.graph[b][a] = 0
+    graph.floyd = none(seq[seq[int]])
+
 proc hasEdge*(graph: Graph, a, b: int) : bool =
     return graph.graph[a][b] > 0
 

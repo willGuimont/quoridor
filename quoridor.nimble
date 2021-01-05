@@ -5,12 +5,8 @@ author        = "William Guimont-Martin"
 description   = "A small Quoridor game"
 license       = "MIT"
 srcDir        = "src"
-installExt    = @["nim"]
-bin           = @["main"]
+bin           = @["quoridor"]
 binDir        = "bin"
 
-
-
 # Dependencies
-
 requires "nim >= 1.0.6"
