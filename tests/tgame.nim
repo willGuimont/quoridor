@@ -51,9 +51,14 @@ test "exception when wall intersect wall":
 
 test "can put wall in between walls":
     var q = makeQuoridor()
-    q.putWall(horizontal, 3, 4)
-    q.putWall(horizontal, 5, 4)
-    q.putWall(vertical, 4, 4)
+    q.putWall(horizontal, 0, 0)
+    q.putWall(horizontal, 2, 0)
+    q.putWall(vertical, 1, 0)
+
+    q = makeQuoridor()
+    q.putWall(vertical, 0, 0)
+    q.putWall(vertical, 0, 2)
+    q.putWall(horizontal, 0, 1)
 
 test "put wall block movement":
     var q = makeQuoridor()

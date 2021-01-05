@@ -10,6 +10,13 @@ test "no edge in empty graph":
         for j in 0..<numNode:
             check emptyGraph.hasEdge(i, j) == false
 
+test "addEdge sets weight":
+    var graph = makeGraph(numNode)
+    graph.addEdge(0, 1)
+    graph.addEdge(1, 2, 5)
+    check graph.getWeightBetween(0, 1) == 1
+    check graph.getWeightBetween(1, 2) == 5
+
 test "addEdge then hasEdge":
     var graph = makeGraph(numNode)
     graph.addEdge(1, 2)
@@ -29,3 +36,9 @@ test "hasPathBetween":
     graph.addEdge(1, 2)
     check graph.hasPathBetween(0, 2)
     check graph.hasPathBetween(0, 3) == false
+
+test "getPathLenght":
+    var graph = makeGraph(numNode)
+    graph.addEdge(0, 1, 3)
+    graph.addEdge(1, 2, 5)
+    check graph.getPathLenght(0, 2) == 8
