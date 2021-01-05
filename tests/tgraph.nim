@@ -20,7 +20,7 @@ test "addEdge sets weight":
 test "addEdge then hasEdge":
     var graph = makeGraph(numNode)
     graph.addEdge(1, 2)
-    check graph.hasEdge(1, 2)  
+    check graph.hasEdge(1, 2)
     check graph.hasEdge(2, 1)
 
 test "removeEdge then no longer hasEdge":
