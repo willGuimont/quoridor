@@ -2,7 +2,7 @@ import strutils
 
 import graph
 
-const boardSize = 9
+const boardSize* = 9
 const middle = 5
 const initialNumberWalls = 20
 

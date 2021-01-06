@@ -4,6 +4,7 @@ version = "0.1.0"
 author = "William Guimont-Martin"
 description = "A small Quoridor game"
 license = "MIT"
+backend = "cpp"
 srcDir = "src"
 bin = @["quoridor"]
 binDir = "bin"
