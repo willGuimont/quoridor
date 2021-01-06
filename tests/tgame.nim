@@ -66,11 +66,17 @@ test "put wall block movement":
     expect ValueError:
         q.move(south)
 
-# test "cannot block players":
-#     var q = makeQuoridor()
-#     q.putWall(vertical, 2, 0)
-#     q.putWall(horizontal, 3, 1)
-#     expect ValueError:
-#         q.putWall(vertical, 4, 0)
+test "cannot block players":
+    var q = makeQuoridor()
+    q.putWall(vertical, 2, 0)
+    q.putWall(horizontal, 3, 1)
+    expect ValueError:
+        q.putWall(vertical, 4, 0)
 
-# TODO test put wall removes player walls
+test "put wall consummes wall":
+    var q = makeQuoridor()
+    q.putWall(horizontal, 2, 0)
+    q.putWall(horizontal, 6, 6)
+    q.putWall(horizontal, 5, 5)
+
+    check q.players[player1].walls == 20 - 2

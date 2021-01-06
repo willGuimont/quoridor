@@ -112,16 +112,17 @@ proc move*(q: var Quoridor, direction: Direction) =
     else:
         raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $pos])
 
-proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc, vd: int): bool =
+proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
+        vd: int): bool =
     return board.hasEdge(ha, hb) and
            board.hasEdge(hc, hd) and
            (board.hasEdge(va, vb) or
             board.hasEdge(vc, vd) or
             (wallGraph.getWeightBetween(va, vb) != infinity and
-             wallGraph.getWeightBetween(va, vb) != wallGraph.getWeightBetween(vc, vd)))
+             wallGraph.getWeightBetween(va, vb) != wallGraph.getWeightBetween(
+                     vc, vd)))
 
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
-    # TODO put wall removes player walls
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:
         raise newException(ValueError, "wall out of bounds")
 
@@ -154,11 +155,12 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
 
     for t in Turn:
         let player = q.players[t]
-        if not hasPathToEnd(q.board, player.position, t):
+        if not hasPathToEnd(board, player.position, t):
             raise newException(ValueError, "blocked player $1" % $t)
 
     q.board = board
     q.wallGraph = wallGraph
+    q.players[q.turn].walls.dec()
     q.turn = q.turn.nextTurn
     q.walls.add(Wall(wallType: wallType, position: (x, y)))
     q.numPlacedWalls.inc()

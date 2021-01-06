@@ -13,8 +13,3 @@ requires "nim >= 1.0.6"
 requires "nimgl >= 1.0.0"
 requires "glm"
 requires "opengl"
-
-# Tasks
-task res, "Copy ressources to bin directory":
-    let resPath = "resources"
-    cpDir(resPath, "$1/$2" % [binDir, resPath])

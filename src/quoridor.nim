@@ -51,9 +51,9 @@ proc main =
     let bg = vec3(33f, 33f, 33f).toRgb()
 
     var q = makeQuoridor()
-    q.putWall(horizontal, 0, 0)
-    q.putWall(horizontal, 2, 0)
-    # q.putWall(vertical, 1, 0)
+    q.putWall(vertical, 2, 0)
+    q.putWall(vertical, 4, 0)
+    q.putWall(horizontal, 3, 1)
 
     while not w.windowShouldClose:
         glClearColor(bg.r, bg.g, bg.b, 1f)
