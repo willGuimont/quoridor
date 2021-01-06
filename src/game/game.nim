@@ -112,13 +112,13 @@ proc move*(q: var Quoridor, direction: Direction) =
     else:
         raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $pos])
 
-proc canPutWall(board: Graph, ha, hb, hc, hd, va, vb, vc, vd: int): bool =
+proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc, vd: int): bool =
     return board.hasEdge(ha, hb) and
            board.hasEdge(hc, hd) and
            (board.hasEdge(va, vb) or
             board.hasEdge(vc, vd) or
-            (board.getWeightBetween(va, vb) != infinity and
-             board.getWeightBetween(va, vb) != board.getWeightBetween(vc, vd)))
+            (wallGraph.getWeightBetween(va, vb) != infinity and
+             wallGraph.getWeightBetween(va, vb) != wallGraph.getWeightBetween(vc, vd)))
 
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     # TODO put wall removes player walls
@@ -138,14 +138,14 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     var wallGraph = q.wallGraph
     case wallType
     of horizontal:
-        if not board.canPutWall(ha, hb, hc, hd, va, vb, vc, vd):
+        if not canPutWall(board, wallGraph, ha, hb, hc, hd, va, vb, vc, vd):
             raise newException(ValueError, "wall collision")
         board.removeEdge(ha, hb)
         board.removeEdge(hc, hd)
         wallGraph.addEdge(ha, hb, q.numPlacedWalls)
         wallGraph.addEdge(hc, hd, q.numPlacedWalls)
     of vertical:
-        if not board.canPutWall(va, vb, vc, vd, ha, hb, hc, hd):
+        if not canPutWall(board, wallGraph, va, vb, vc, vd, ha, hb, hc, hd):
             raise newException(ValueError, "wall collision")
         board.removeEdge(va, vb)
         board.removeEdge(vc, vd)
@@ -161,5 +161,4 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     q.wallGraph = wallGraph
     q.turn = q.turn.nextTurn
     q.walls.add(Wall(wallType: wallType, position: (x, y)))
-    q.numPlacedWalls += 1
-    inc(q.numPlacedWalls)
+    q.numPlacedWalls.inc()

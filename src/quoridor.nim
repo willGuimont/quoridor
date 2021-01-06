@@ -18,7 +18,7 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
 proc toRGB(vec: Vec3[float32]): Vec3[float32] =
     return vec3(vec.x / 255, vec.y / 255, vec.z / 255)
 
-proc toScreenSpace(x: int): float {.inline.} =
+proc toScreenSpace(x: SomeNumber): float {.inline.} =
     2 * x / boardSize - 1
 
 const offset = 5.toScreenSpace
@@ -51,9 +51,10 @@ proc main =
     let bg = vec3(33f, 33f, 33f).toRgb()
 
     var q = makeQuoridor()
-    q.putWall(vertical, 2, 0)
-    q.putWall(horizontal, 3, 1)
-    q.putWall(vertical, 4, 0)
+    q.putWall(horizontal, 0, 0)
+    q.putWall(horizontal, 2, 0)
+    # q.putWall(vertical, 1, 0)
+
     while not w.windowShouldClose:
         glClearColor(bg.r, bg.g, bg.b, 1f)
         glClear(GL_COLOR_BUFFER_BIT)
@@ -88,17 +89,18 @@ proc main =
         glBegin(GL_LINES);
         glColor3f(1.0, 1.0, 1.0)
         for w in q.walls:
-            let (x, y) = w.position
+            let (px, py) = w.position
+            let (x, y) = (px.float, py.float)
             let t = w.wallType
 
-            var a, b, c, d: int
+            var a, b, c, d: float
             case t
             of horizontal:
-                (a, b) = (x, y + 1)
-                (c, d) = (x + 2, y + 1)
+                (a, b) = (x + 0.1, y + 1)
+                (c, d) = (x + 2 - 0.1, y + 1)
             of vertical:
-                (a, b) = (x + 1, y)
-                (c, d) = (x + 1, y + 2)
+                (a, b) = (x + 1, y + 0.1)
+                (c, d) = (x + 1, y + 2 - 0.1)
             glVertex2f(a.toScreenSpace, b.toScreenSpace);
             glVertex2f(c.toScreenSpace, d.toScreenSpace);
         glEnd()
