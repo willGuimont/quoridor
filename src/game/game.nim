@@ -3,7 +3,7 @@ import strutils
 import graph
 
 const boardSize* = 9
-const middle = 5
+const middle = boardSize div 2
 const initialNumberWalls = 20
 
 type
@@ -19,12 +19,12 @@ type
         south
         east
         west
-    Player = object
-        walls: int
-        position: Position
-    Wall = object
-        wallType: WallType
-        position: Position
+    Player* = object
+        walls*: int
+        position*: Position
+    Wall* = object
+        wallType*: WallType
+        position*: Position
     Quoridor* = object
         turn*: Turn
         players*: array[Turn, Player]

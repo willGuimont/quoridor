@@ -68,9 +68,9 @@ test "put wall block movement":
 
 # test "cannot block players":
 #     var q = makeQuoridor()
-#     q.putWall(vertical, 4, 0)
-#     q.putWall(vertical, 6, 0)
+#     q.putWall(vertical, 2, 0)
+#     q.putWall(horizontal, 3, 1)
 #     expect ValueError:
-#         q.putWall(horizontal, 5, 1)
+#         q.putWall(vertical, 4, 0)
 
 # TODO test put wall removes player walls
