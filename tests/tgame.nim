@@ -22,6 +22,7 @@ test "exception when wall collision":
     expect ValueError:
         q.putWall(horizontal, 5, 0)
     check q.currentTurn == player2
+    check q.players[q.currentTurn].walls == 20
 
 test "wall boundary cases":
     var q = makeQuoridor()
