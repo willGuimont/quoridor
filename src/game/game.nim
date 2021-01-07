@@ -1,4 +1,5 @@
 import strutils
+import options
 
 import graph
 
@@ -64,14 +65,17 @@ proc toNodeIndex(pos: (int, int)): int =
     let (x, y) = pos
     return toNodeIndex(x, y)
 
+proc endPosition(t: Turn): seq[Position] =
+    let y = case t
+        of player1: 8
+        of player2: 0
+    for i in 0..<boardSize:
+        result.add((i, y))
+
 proc hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
     let p = position.toNodeIndex
-    for x in 0..<boardSize:
-        let endIndex = (case turn
-            of player1:
-                (x, boardSize - 1)
-            of player2:
-                (x, 0)).toNodeIndex
+    for e in turn.endPosition:
+        let endIndex = e.toNodeIndex
         if board.hasPathBetween(p, endIndex):
             return true
     return false
@@ -164,3 +168,10 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     q.turn = q.turn.nextTurn
     q.walls.add(Wall(wallType: wallType, position: (x, y)))
     q.numPlacedWalls.inc()
+
+proc winner*(q: Quoridor): Option[Turn] =
+    for t in Turn:
+        let p = q.players[t]
+        if p.position in t.endPosition:
+            return some(t)
+    return none[Turn]()

@@ -1,4 +1,5 @@
 import unittest
+import options
 
 import game/game
 
@@ -81,3 +82,23 @@ test "put wall consummes wall":
     q.putWall(horizontal, 5, 5)
 
     check q.players[player1].walls == 20 - 2
+
+test "game end":
+    var q = makeQuoridor()
+    check q.winner == none[Turn]()
+    q.move(north)
+    q.move(east)
+    q.move(north)
+    q.move(east)
+    q.move(north)
+    q.move(west)
+    q.move(north)
+    q.move(east)
+    q.move(north)
+    q.move(west)
+    q.move(north)
+    q.move(east)
+    q.move(north)
+    q.move(west)
+    q.move(north)
+    check q.winner == some(player1)

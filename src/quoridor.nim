@@ -3,6 +3,7 @@ import glm
 import opengl/glut
 
 import strutils
+import options
 
 import game/game
 
@@ -84,7 +85,7 @@ proc draw(q: Quoridor) =
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, int('1') + int(i))
     glPopMatrix()
 
-proc drawLegend(q: Quoridor) =
+proc drawLegend(q: Quoridor, input: string) =
     glPushMatrix()
 
     glColor3f(1, 1, 1)
@@ -96,15 +97,49 @@ proc drawLegend(q: Quoridor) =
         of player2: (-0.95, 0.8)
     drawText(x, y, "*", GLUT_BITMAP_TIMES_ROMAN_24)
 
+    drawText(-0.9, -0.95, input, GLUT_BITMAP_TIMES_ROMAN_24)
+
     glPopMatrix()
 
+proc play(q: var Quoridor, input: string) =
+    if input.len == 2 and input[0] == 'M':
+        let direction = case input[1]
+            of 'N': north
+            of 'S': south
+            of 'E': east
+            of 'W': west
+            else: return
+        q.move(direction)
+    elif input.len == 3:
+        let orientation = case input[0]
+            of 'H': horizontal
+            of 'V': vertical
+            else: return
+        let col = input[1]
+        let row = input[2]
+        if col in 'A'..'H' and row in '1'..'8':
+            let x = int(col) - int('A')
+            let y = int(row) - int('1')
+            q.putWall(orientation, x, y)
+
+var q = makeQuoridor()
+var input: string
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
-    mods: int32): void {.cdecl.} =
-    if key == GLFWKey.Escape and action == GLFWPress:
+        mods: int32): void {.cdecl.} =
+    if key == GLFWKey.Enter and action == GLFWPress:
+        try:
+            q.play(input)
+        except ValueError:
+            discard
+        input = ""
+    elif key == GLFWKey.Escape and action == GLFWPress:
         window.setWindowShouldClose(true)
-    if key == GLFWKey.Space:
-        glPolygonMode(GL_FRONT_AND_BACK, if action !=
-            GLFWRelease: GL_LINE else: GL_FILL)
+    elif key == GLFWKey.Backspace and action == GLFWPress:
+        if len(input) > 0:
+            input = input[0..^2]
+    elif ((GLFWKey.A <= key and key <= GLFWKey.Z) or (GLFWKey.K1 <= key and
+            key <= GLFWKey.K8)) and action == GLFWPress:
+        input.add(char(key))
 
 proc main =
     # GLFW
@@ -131,19 +166,23 @@ proc main =
     glutInit()
 
     let bg = vec3(33f, 33f, 33f).toRgb()
-
-    var q = makeQuoridor()
     while not w.windowShouldClose:
+        # update
+        let winner = q.winner
+        if winner.isSome:
+            w.setWindowShouldClose(true)
+
+        # draw
         glClearColor(bg.r, bg.g, bg.b, 1f)
         glClear(GL_COLOR_BUFFER_BIT)
 
-        q.drawLegend()
+        q.drawLegend(input)
         q.draw()
-
         w.swapBuffers
         glfwPollEvents()
 
     w.destroyWindow
     glfwTerminate()
 
-main()
+when isMainModule:
+    main()
