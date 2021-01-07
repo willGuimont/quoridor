@@ -5,7 +5,7 @@ import graph
 
 const boardSize* = 9
 const middle = boardSize div 2
-const initialNumberWalls = 20
+const initialNumberWalls = 10
 
 type
     Position = (int, int)

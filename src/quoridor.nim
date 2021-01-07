@@ -102,6 +102,7 @@ proc drawLegend(q: Quoridor, input: string) =
     glPopMatrix()
 
 proc play(q: var Quoridor, input: string) =
+    # TODO handle Face To Face
     if input.len == 2 and input[0] == 'M':
         let direction = case input[1]
             of 'N': north
