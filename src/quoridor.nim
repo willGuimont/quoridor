@@ -172,6 +172,7 @@ proc main =
         let winner = q.winner
         if winner.isSome:
             w.setWindowShouldClose(true)
+            echo "Winner is $1" % [$winner.get]
 
         # draw
         glClearColor(bg.r, bg.g, bg.b, 1f)
