@@ -21,6 +21,7 @@ type
         east
         west
     Player* = object
+        turn: Turn
         walls*: int
         position*: Position
     Wall* = object
@@ -80,6 +81,29 @@ proc hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
             return true
     return false
 
+proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
+        vd: int): bool =
+    return board.hasEdge(ha, hb) and
+           board.hasEdge(hc, hd) and
+           (board.hasEdge(va, vb) or
+            board.hasEdge(vc, vd) or
+            (wallGraph.getWeightBetween(va, vb) != infinity and
+             wallGraph.getWeightBetween(va, vb) != wallGraph.getWeightBetween(
+                     vc, vd)))
+
+proc hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
+    for turn in Turn:
+        if turn != t:
+            let player = q.players[turn]
+            if player.position.toNodeIndex == pos.toNodeIndex:
+                return true
+    return false
+
+proc isMoveLegal(q: Quoridor, player: Player, toPos: Position): bool =
+    return toPos.inBound and 
+        q.board.hasEdge(player.position.toNodeIndex, toPos.toNodeIndex) and 
+        not q.hasOtherPlayerAt(player.turn, toPos)
+
 # Quoridor
 proc currentTurn*(q: Quoridor): Turn {.inline.} =
     q.turn
@@ -87,8 +111,8 @@ proc currentTurn*(q: Quoridor): Turn {.inline.} =
 proc makeQuoridor*(): Quoridor =
     var players: array[Turn, Player]
     block:
-        let p1 = Player(walls: initialNumberWalls, position: (middle, 0))
-        let p2 = Player(walls: initialNumberWalls, position: (middle, boardSize-1))
+        let p1 = Player(walls: initialNumberWalls, position: (middle, 0), turn: player1)
+        let p2 = Player(walls: initialNumberWalls, position: (middle, boardSize-1), turn: player2)
         players[player1] = p1
         players[player2] = p2
     var board = makeGraph(boardSize * boardSize)
@@ -108,23 +132,12 @@ proc move*(q: var Quoridor, direction: Direction) =
     # TODO handle Face To Face
     var player = q.players[q.turn]
     var pos = player.position.plusDirection(direction)
-    if pos.inBound and q.board.hasEdge(player.position.toNodeIndex,
-            pos.toNodeIndex):
+    if q.isMoveLegal(player, pos):
         player.position = pos
         q.players[q.turn] = player
         q.turn = q.turn.nextTurn
     else:
         raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $pos])
-
-proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
-        vd: int): bool =
-    return board.hasEdge(ha, hb) and
-           board.hasEdge(hc, hd) and
-           (board.hasEdge(va, vb) or
-            board.hasEdge(vc, vd) or
-            (wallGraph.getWeightBetween(va, vb) != infinity and
-             wallGraph.getWeightBetween(va, vb) != wallGraph.getWeightBetween(
-                     vc, vd)))
 
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:
