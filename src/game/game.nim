@@ -100,7 +100,8 @@ proc hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
     return false
 
 proc isMoveLegal(q: Quoridor, fromPos, toPos: Position): bool =
-    return toPos.inBound and q.board.hasEdge(fromPos.toNodeIndex, toPos.toNodeIndex)
+    return toPos.inBound and q.board.hasEdge(fromPos.toNodeIndex,
+            toPos.toNodeIndex)
 
 # Quoridor
 proc currentTurn*(q: Quoridor): Turn {.inline.} =
@@ -110,7 +111,8 @@ proc makeQuoridor*(): Quoridor =
     var players: array[Turn, Player]
     block:
         let p1 = Player(walls: initialNumberWalls, position: (middle, 0), turn: player1)
-        let p2 = Player(walls: initialNumberWalls, position: (middle, boardSize-1), turn: player2)
+        let p2 = Player(walls: initialNumberWalls, position: (middle,
+                boardSize-1), turn: player2)
         players[player1] = p1
         players[player2] = p2
     var board = makeGraph(boardSize * boardSize)
@@ -134,11 +136,13 @@ proc move*(q: var Quoridor, direction: Direction) =
         if q.hasOtherPlayerAt(player.turn, toPos):
             # handle jump
             let jump = toPos.plusDirection(direction)
-            if q.isMoveLegal(toPos, jump) and not q.hasOtherPlayerAt(player.turn, jump):
+            if q.isMoveLegal(toPos, jump) and not q.hasOtherPlayerAt(
+                    player.turn, jump):
                 player.position = jump
             else:
                 # TODO handle other cases
-                raise newException(ValueError, "player $1 cannot jump to $2" % [$q.turn, $toPos])
+                raise newException(ValueError, "player $1 cannot jump to $2" % [
+                        $q.turn, $toPos])
         else:
             player.position = toPos
         q.players[q.turn] = player
