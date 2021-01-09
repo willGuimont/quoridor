@@ -28,7 +28,7 @@ type
         wallType*: WallType
         position*: Position
     Quoridor* = object
-        turn*: Turn
+        turn: Turn
         players*: array[Turn, Player]
         board: Graph
         numPlacedWalls: int
@@ -163,6 +163,9 @@ proc move*(q: var Quoridor, direction: Direction, jumpDir: Option[
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:
         raise newException(ValueError, "wall out of bounds")
+    let player = q.players[q.turn]
+    if player.walls == 0:
+        raise newException(ValueError, "not enough walls")
 
     var ha = (x, y).toNodeIndex
     var hb = (x, y + 1).toNodeIndex

@@ -121,6 +121,18 @@ test "put wall consummes wall":
 
     check q.players[player1].walls == 10 - 2
 
+test "cannot put walls when 0 wall":
+    var q = makeQuoridor()
+    for i in 0..7:
+        q.putWall(vertical, i, 0)
+        q.putWall(vertical, i, 7)
+    for i in 1..2:
+        q.putWall(vertical, i, 2)
+        q.putWall(vertical, i, 5)
+    expect ValueError:
+        q.putWall(vertical, 3, 2)
+    check q.currentTurn == player1
+
 test "game end":
     var q = makeQuoridor()
     check q.winner == none[Turn]()
