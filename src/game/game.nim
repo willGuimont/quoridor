@@ -4,7 +4,6 @@ import options
 import graph
 
 const boardSize* = 9
-const middle = boardSize div 2
 const initialNumberWalls = 10
 
 type
@@ -36,7 +35,7 @@ type
         walls*: seq[Wall]
     IllegalMoveError* = object of CatchableError
 
-# Helper
+# helpers
 proc nextTurn(turn: Turn): Turn =
     case turn
         of player1:
@@ -84,13 +83,16 @@ proc hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
 
 proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
         vd: int): bool =
-    return board.hasEdge(ha, hb) and
-           board.hasEdge(hc, hd) and
-           (board.hasEdge(va, vb) or
-            board.hasEdge(vc, vd) or
-            (wallGraph.getWeightBetween(va, vb) != infinity and
-             wallGraph.getWeightBetween(va, vb) != wallGraph.getWeightBetween(
-                     vc, vd)))
+    # (ha, hb) and (hc, hd) will be blocked by the wall
+    # (va, vb) and (vc, vd) are the orthogonal edges, useful to check intersecting walls
+    let canPutWall = board.hasEdge(ha, hb) and board.hasEdge(hc, hd)
+    let wallBeside = not board.hasEdge(va, vb) and not board.hasEdge(vc, vd)
+    let noGapBetweenOrthogonalWalls = (wallGraph.getWeightBetween(va, vb) !=
+            infinity and wallGraph.getWeightBetween(va, vb) ==
+                    wallGraph.getWeightBetween(vc, vd))
+    let isOtherWallBlocking = wallBeside and noGapBetweenOrthogonalWalls
+
+    return canPutWall and not isOtherWallBlocking
 
 proc hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
     for turn in Turn:
@@ -104,18 +106,21 @@ proc isMoveLegal(q: Quoridor, fromPos, toPos: Position): bool =
     return toPos.inBound and q.board.hasEdge(fromPos.toNodeIndex,
             toPos.toNodeIndex)
 
-# Quoridor
+# quoridor
 proc currentTurn*(q: Quoridor): Turn {.inline.} =
     q.turn
 
 proc makeQuoridor*(): Quoridor =
     var players: array[Turn, Player]
-    block:
+    block buildPlayers:
+        const middle = boardSize div 2
         let p1 = Player(walls: initialNumberWalls, position: (middle, 0), turn: player1)
         let p2 = Player(walls: initialNumberWalls, position: (middle,
                 boardSize-1), turn: player2)
         players[player1] = p1
         players[player2] = p2
+
+    # build board graph
     var board = makeGraph(boardSize * boardSize)
     for x in 0..<boardSize:
         for y in 0..<boardSize:
@@ -125,37 +130,45 @@ proc makeQuoridor*(): Quoridor =
                 let dp = p.plusDirection(d)
                 if dp.inBound:
                     board.addEdge(i, dp.toNodeIndex)
-    let wallGraph = makeGraph(boardSize * boardSize)
-    result = Quoridor(players: players, board: board, turn: player1,
-            numPlacedWalls: 0, wallGraph: wallGraph)
 
-proc move*(q: var Quoridor, direction: Direction, jumpDir: Option[
-        Direction] = none[Direction]()) =
-    # TODO handle Face To Face
+    # build wall graph
+    let wallGraph = makeGraph(boardSize * boardSize)
+
+    Quoridor(players: players, board: board, turn: player1, numPlacedWalls: 0,
+            wallGraph: wallGraph)
+
+proc move*(q: var Quoridor, direction: Direction,
+           jumpDir: Option[Direction] = none[Direction]()) =
     var player = q.players[q.turn]
-    var toPos = player.position.plusDirection(direction)
-    if q.isMoveLegal(player.position, toPos):
-        if q.hasOtherPlayerAt(player.turn, toPos):
-            # handle jump
-            let jump = toPos.plusDirection(direction)
-            if q.isMoveLegal(toPos, jump) and not q.hasOtherPlayerAt(
-                    player.turn, jump):
-                player.position = jump
+    let turn = player.turn
+    let playerPos = player.position
+    var toPos = playerPos.plusDirection(direction)
+
+    # can make move
+    if q.isMoveLegal(playerPos, toPos):
+        # is it moving onto another player?
+        if q.hasOtherPlayerAt(turn, toPos):
+            let jumpPos = toPos.plusDirection(direction)
+            # can the player jump above the other player?
+            if q.isMoveLegal(toPos, jumpPos) and not q.hasOtherPlayerAt(turn, jumpPos):
+                player.position = jumpPos
+            # otherwise can move in diagonal, if not blocked by walls
             else:
-                # TODO handle other cases
-                if jumpDir.isSome:
+                if jumpDir.isNone:
+                    raise newException(IllegalMoveError, "no jump direction specified")
+                else:
+                    # try to move diagonally
                     let diagPos = toPos.plusDirection(jumpDir.get)
                     if q.isMoveLegal(toPos, diagPos) and not q.hasOtherPlayerAt(
-                            player.turn, diagPos):
+                            turn, diagPos):
                         player.position = diagPos
                     else:
                         raise newException(IllegalMoveError,
-                                "player $1 cannot jump to $2" % [$q.turn, $toPos])
-                else:
-                    raise newException(IllegalMoveError,
-                        "player $1 cannot jump to $2" % [$q.turn, $toPos])
+                                "player $1 move diagonally to $2" % [$q.turn, $toPos])
+        # won't move onto another player
         else:
             player.position = toPos
+
         q.players[q.turn] = player
         q.turn = q.turn.nextTurn
     else:
@@ -165,6 +178,7 @@ proc move*(q: var Quoridor, direction: Direction, jumpDir: Option[
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:
         raise newException(IllegalMoveError, "wall out of bounds")
+
     let player = q.players[q.turn]
     if player.walls == 0:
         raise newException(IllegalMoveError, "not enough walls")
@@ -180,6 +194,8 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
 
     var board = q.board
     var wallGraph = q.wallGraph
+
+    #  put wall
     case wallType
     of horizontal:
         if not canPutWall(board, wallGraph, ha, hb, hc, hd, va, vb, vc, vd):
@@ -196,11 +212,13 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
         wallGraph.addEdge(va, vb, q.numPlacedWalls)
         wallGraph.addEdge(vc, vd, q.numPlacedWalls)
 
+    # check if block path of a player
     for t in Turn:
         let player = q.players[t]
         if not hasPathToEnd(board, player.position, t):
             raise newException(IllegalMoveError, "blocked player $1" % $t)
 
+    # update q
     q.board = board
     q.wallGraph = wallGraph
     q.players[q.turn].walls.dec()
