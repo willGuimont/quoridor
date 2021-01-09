@@ -34,6 +34,7 @@ type
         numPlacedWalls: int
         wallGraph: Graph
         walls*: seq[Wall]
+    IllegalMoveError* = object of CatchableError
 
 # Helper
 proc nextTurn(turn: Turn): Turn =
@@ -148,24 +149,25 @@ proc move*(q: var Quoridor, direction: Direction, jumpDir: Option[
                             player.turn, diagPos):
                         player.position = diagPos
                     else:
-                        raise newException(ValueError,
-                        "player $1 cannot jump to $2" % [$q.turn, $toPos])
+                        raise newException(IllegalMoveError,
+                                "player $1 cannot jump to $2" % [$q.turn, $toPos])
                 else:
-                    raise newException(ValueError,
+                    raise newException(IllegalMoveError,
                         "player $1 cannot jump to $2" % [$q.turn, $toPos])
         else:
             player.position = toPos
         q.players[q.turn] = player
         q.turn = q.turn.nextTurn
     else:
-        raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $toPos])
+        raise newException(IllegalMoveError, "player $1 cannot move to $2" % [
+                $q.turn, $toPos])
 
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:
-        raise newException(ValueError, "wall out of bounds")
+        raise newException(IllegalMoveError, "wall out of bounds")
     let player = q.players[q.turn]
     if player.walls == 0:
-        raise newException(ValueError, "not enough walls")
+        raise newException(IllegalMoveError, "not enough walls")
 
     var ha = (x, y).toNodeIndex
     var hb = (x, y + 1).toNodeIndex
@@ -181,14 +183,14 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     case wallType
     of horizontal:
         if not canPutWall(board, wallGraph, ha, hb, hc, hd, va, vb, vc, vd):
-            raise newException(ValueError, "wall collision")
+            raise newException(IllegalMoveError, "wall collision")
         board.removeEdge(ha, hb)
         board.removeEdge(hc, hd)
         wallGraph.addEdge(ha, hb, q.numPlacedWalls)
         wallGraph.addEdge(hc, hd, q.numPlacedWalls)
     of vertical:
         if not canPutWall(board, wallGraph, va, vb, vc, vd, ha, hb, hc, hd):
-            raise newException(ValueError, "wall collision")
+            raise newException(IllegalMoveError, "wall collision")
         board.removeEdge(va, vb)
         board.removeEdge(vc, vd)
         wallGraph.addEdge(va, vb, q.numPlacedWalls)
@@ -197,7 +199,7 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     for t in Turn:
         let player = q.players[t]
         if not hasPathToEnd(board, player.position, t):
-            raise newException(ValueError, "blocked player $1" % $t)
+            raise newException(IllegalMoveError, "blocked player $1" % $t)
 
     q.board = board
     q.wallGraph = wallGraph

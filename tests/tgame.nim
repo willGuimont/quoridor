@@ -25,7 +25,7 @@ test "cannot jump if wall":
         q.move(south)
     q.move(north)
     q.putWall(horizontal, 3, 5)
-    expect ValueError:
+    expect IllegalMoveError:
         q.move(north)
 
 test "cannot jump but can go diagonal":
@@ -46,47 +46,47 @@ test "cannot jump wall in way of diagonal":
     q.putWall(horizontal, 3, 5)
     q.putWall(vertical, 4, 5)
     q.putWall(horizontal, 0, 0)
-    expect ValueError:
+    expect IllegalMoveError:
         q.move(north, some(east))
 
 test "exception when bad move":
     var q = makeQuoridor()
-    expect ValueError:
+    expect IllegalMoveError:
         q.move(south)
     check q.currentTurn == player1
 
 test "exception when wall collision":
     var q = makeQuoridor()
     q.putWall(horizontal, 5, 0)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(horizontal, 5, 0)
     check q.currentTurn == player2
     check q.players[q.currentTurn].walls == 10
 
 test "wall boundary cases":
     var q = makeQuoridor()
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(horizontal, -1, 5)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(horizontal, 5, -1)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(horizontal, 8, 5)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(horizontal, 5, 8)
 
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, -1, 5)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, 5, -1)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, 8, 5)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, 5, 8)
 
 test "exception when wall intersect wall":
     var q = makeQuoridor()
     q.putWall(horizontal, 4, 4)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, 4, 4)
 
 test "can put wall in between walls":
@@ -103,14 +103,14 @@ test "can put wall in between walls":
 test "put wall block movement":
     var q = makeQuoridor()
     q.putWall(horizontal, 3, 7)
-    expect ValueError:
+    expect IllegalMoveError:
         q.move(south)
 
 test "cannot block players":
     var q = makeQuoridor()
     q.putWall(vertical, 2, 0)
     q.putWall(horizontal, 3, 1)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, 4, 0)
 
 test "put wall consummes wall":
@@ -129,7 +129,7 @@ test "cannot put walls when 0 wall":
     for i in 1..2:
         q.putWall(vertical, i, 2)
         q.putWall(vertical, i, 5)
-    expect ValueError:
+    expect IllegalMoveError:
         q.putWall(vertical, 3, 2)
     check q.currentTurn == player1
 

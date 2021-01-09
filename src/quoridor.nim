@@ -138,7 +138,7 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
     if key == GLFWKey.Enter and action == GLFWPress:
         try:
             q.play(input)
-        except ValueError:
+        except IllegalMoveError:
             discard
         input = ""
     elif key == GLFWKey.Escape and action == GLFWPress:
