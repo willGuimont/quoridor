@@ -147,6 +147,9 @@ proc move*(q: var Quoridor, direction: Direction, jumpDir: Option[
                     if q.isMoveLegal(toPos, diagPos) and not q.hasOtherPlayerAt(
                             player.turn, diagPos):
                         player.position = diagPos
+                    else:
+                        raise newException(ValueError,
+                        "player $1 cannot jump to $2" % [$q.turn, $toPos])
                 else:
                     raise newException(ValueError,
                         "player $1 cannot jump to $2" % [$q.turn, $toPos])
