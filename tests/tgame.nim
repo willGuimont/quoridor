@@ -123,12 +123,11 @@ test "put wall consummes wall":
 
 test "cannot put walls when 0 wall":
     var q = makeQuoridor()
-    for i in 0..7:
-        q.putWall(vertical, i, 0)
-        q.putWall(vertical, i, 7)
-    for i in 1..2:
-        q.putWall(vertical, i, 2)
-        q.putWall(vertical, i, 5)
+    for i in 0..9:
+        let x = i mod 8
+        let y = (i /% 8) * 2
+        q.putWall(vertical, x, y)
+        q.putWall(vertical, x, 7 - y)
     expect IllegalMoveError:
         q.putWall(vertical, 3, 2)
     check q.currentTurn == player1
@@ -136,19 +135,9 @@ test "cannot put walls when 0 wall":
 test "game end":
     var q = makeQuoridor()
     check q.winner == none[Turn]()
-    q.move(north)
-    q.move(east)
-    q.move(north)
-    q.move(east)
-    q.move(north)
-    q.move(west)
-    q.move(north)
-    q.move(east)
-    q.move(north)
-    q.move(west)
-    q.move(north)
-    q.move(east)
-    q.move(north)
-    q.move(west)
+    for i in 1..7:
+        q.move(north)
+        q.move(if i mod 2 == 0: east else: west)
+
     q.move(north)
     check q.winner == some(player1)
