@@ -11,17 +11,23 @@ test "can move":
     q.move(south)
     check q.currentTurn == player1
 
-test "cannot move onto other player":
+test "can jump over":
+    var q = makeQuoridor()
+    for _ in 1..7:
+        q.move(north)
+        q.move(south)
+    check q.winner == some(player2)
+
+test "cannot jump if wall":
     var q = makeQuoridor()
     for _ in 1..3:
         q.move(north)
         q.move(south)
     q.move(north)
+    q.putWall(horizontal, 3, 5)
     expect ValueError:
-        q.move(south)
+        q.move(north)
 
-test "can jump over":
-    check false
 
 test "exception when bad move":
     var q = makeQuoridor()

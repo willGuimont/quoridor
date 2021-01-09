@@ -99,10 +99,8 @@ proc hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
                 return true
     return false
 
-proc isMoveLegal(q: Quoridor, player: Player, toPos: Position): bool =
-    return toPos.inBound and 
-        q.board.hasEdge(player.position.toNodeIndex, toPos.toNodeIndex) and 
-        not q.hasOtherPlayerAt(player.turn, toPos)
+proc isMoveLegal(q: Quoridor, fromPos, toPos: Position): bool =
+    return toPos.inBound and q.board.hasEdge(fromPos.toNodeIndex, toPos.toNodeIndex)
 
 # Quoridor
 proc currentTurn*(q: Quoridor): Turn {.inline.} =
@@ -131,13 +129,22 @@ proc makeQuoridor*(): Quoridor =
 proc move*(q: var Quoridor, direction: Direction) =
     # TODO handle Face To Face
     var player = q.players[q.turn]
-    var pos = player.position.plusDirection(direction)
-    if q.isMoveLegal(player, pos):
-        player.position = pos
+    var toPos = player.position.plusDirection(direction)
+    if q.isMoveLegal(player.position, toPos):
+        if q.hasOtherPlayerAt(player.turn, toPos):
+            # handle jump
+            let jump = toPos.plusDirection(direction)
+            if q.isMoveLegal(toPos, jump) and not q.hasOtherPlayerAt(player.turn, jump):
+                player.position = jump
+            else:
+                # TODO handle other cases
+                raise newException(ValueError, "player $1 cannot jump to $2" % [$q.turn, $toPos])
+        else:
+            player.position = toPos
         q.players[q.turn] = player
         q.turn = q.turn.nextTurn
     else:
-        raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $pos])
+        raise newException(ValueError, "player $1 cannot move to $2" % [$q.turn, $toPos])
 
 proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:

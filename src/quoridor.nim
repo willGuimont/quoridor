@@ -143,6 +143,9 @@ proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
         input.add(char(key))
 
 proc main =
+    echo "Move: \t\t\tM{N | S | E | W}"
+    echo "Horizontal wall: \tH{A-H}{1-8}"
+    echo "Vertical wall: \t\tH{A-H}{1-8}"
     # GLFW
     doAssert glfwInit()
 
