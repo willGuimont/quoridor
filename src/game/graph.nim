@@ -33,9 +33,9 @@ proc createFloydIfNone(graph: var Graph) =
         var D = graph.graph
         let n = len(graph.graph) - 1
 
-        for k in 0..n:
-            for i in 0..n:
-                for j in 0..n:
+        for k in 0..n: # intermediate node
+            for i in 0..n: # starting node
+                for j in 0..n: # end node
                     let otherPath = if D[i][k] == infinity or D[k][j] == infinity:
                             infinity
                         else:
