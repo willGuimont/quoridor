@@ -101,17 +101,25 @@ proc drawLegend(q: Quoridor, input: string) =
 
     glPopMatrix()
 
+proc parseMove(input: string, i: int): Option[Direction] =
+    if i >= input.len:
+        none[Direction]()
+    else:
+        case input[i]
+        of 'N': some(north)
+        of 'S': some(south)
+        of 'E': some(east)
+        of 'W': some(west)
+        else: none[Direction]()
+
 proc play(q: var Quoridor, input: string) =
     # TODO handle Face To Face
-    if input.len == 2 and input[0] == 'M':
-        let direction = case input[1]
-            of 'N': north
-            of 'S': south
-            of 'E': east
-            of 'W': west
-            else: return
-        q.move(direction)
-    elif input.len == 3:
+    let n = input.len
+    if n == 2 or n == 3 and input[0] == 'M':
+        let direction = input.parseMove(1).get
+        let jumpDir = input.parseMove(2)
+        q.move(direction, jumpDir)
+    elif n == 3:
         let orientation = case input[0]
             of 'H': horizontal
             of 'V': vertical
@@ -175,6 +183,7 @@ proc main =
         let winner = q.winner
         if winner.isSome:
             w.setWindowShouldClose(true)
+            echo "-----"
             echo "Winner is $1" % [$winner.get]
 
         # draw

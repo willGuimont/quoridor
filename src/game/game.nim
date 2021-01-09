@@ -128,7 +128,8 @@ proc makeQuoridor*(): Quoridor =
     result = Quoridor(players: players, board: board, turn: player1,
             numPlacedWalls: 0, wallGraph: wallGraph)
 
-proc move*(q: var Quoridor, direction: Direction) =
+proc move*(q: var Quoridor, direction: Direction, jumpDir: Option[
+        Direction] = none[Direction]()) =
     # TODO handle Face To Face
     var player = q.players[q.turn]
     var toPos = player.position.plusDirection(direction)
@@ -141,8 +142,14 @@ proc move*(q: var Quoridor, direction: Direction) =
                 player.position = jump
             else:
                 # TODO handle other cases
-                raise newException(ValueError, "player $1 cannot jump to $2" % [
-                        $q.turn, $toPos])
+                if jumpDir.isSome:
+                    let diagPos = toPos.plusDirection(jumpDir.get)
+                    if q.isMoveLegal(toPos, diagPos) and not q.hasOtherPlayerAt(
+                            player.turn, diagPos):
+                        player.position = diagPos
+                else:
+                    raise newException(ValueError,
+                        "player $1 cannot jump to $2" % [$q.turn, $toPos])
         else:
             player.position = toPos
         q.players[q.turn] = player

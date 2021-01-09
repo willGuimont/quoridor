@@ -28,6 +28,14 @@ test "cannot jump if wall":
     expect ValueError:
         q.move(north)
 
+test "cannot jump but can go diagonal":
+    var q = makeQuoridor()
+    for _ in 1..3:
+        q.move(north)
+        q.move(south)
+    q.move(north)
+    q.putWall(horizontal, 3, 5)
+    q.move(north, some(east))
 
 test "exception when bad move":
     var q = makeQuoridor()
