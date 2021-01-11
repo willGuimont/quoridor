@@ -10,10 +10,10 @@ import game/game
 const screenWidth = 600
 const screenHeight = 600
 
-proc toRGB(vec: Vec3[float32]): Vec3[float32] =
+func toRGB(vec: Vec3[float32]): Vec3[float32] =
     return vec3(vec.x / 255, vec.y / 255, vec.z / 255)
 
-proc toScreenSpace(x: SomeNumber): float {.inline.} =
+func toScreenSpace(x: SomeNumber): float {.inline.} =
     2 * x / boardSize - 1
 
 const offset = 5.toScreenSpace
@@ -107,7 +107,7 @@ proc drawLegend(q: Quoridor, input: string) =
     # user input
     drawText(-0.9, -0.95, input, GLUT_BITMAP_TIMES_ROMAN_24)
 
-proc parseMove(input: string, i: int): Option[Direction] =
+func parseMove(input: string, i: int): Option[Direction] =
     if i >= input.len:
         none[Direction]()
     else:
@@ -118,7 +118,7 @@ proc parseMove(input: string, i: int): Option[Direction] =
         of 'W': some(west)
         else: none[Direction]()
 
-proc play(q: var Quoridor, input: string) =
+func play(q: var Quoridor, input: string) =
     let n = input.len
     if n == 2 or n == 3 and input[0] == 'M':
         let direction = input.parseMove(1)
@@ -144,7 +144,7 @@ proc play(q: var Quoridor, input: string) =
 
 var q = makeQuoridor()
 var input: string
-proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
+proc keyfunc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
         mods: int32): void {.cdecl.} =
     if key == GLFWKey.Enter and action == GLFWPress:
         try:
@@ -176,7 +176,7 @@ proc main =
             nil, nil)
     doAssert w != nil
 
-    discard w.setKeyCallback(keyProc)
+    discard w.setKeyCallback(keyfunc)
     w.makeContextCurrent
 
     # opengl

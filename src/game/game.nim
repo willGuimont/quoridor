@@ -36,14 +36,14 @@ type
     IllegalMoveError* = object of CatchableError
 
 # helpers
-proc nextTurn(turn: Turn): Turn =
+func nextTurn(turn: Turn): Turn =
     case turn
         of player1:
             player2
         of player2:
             player1
 
-proc plusDirection(pos: Position, dir: Direction): Position =
+func plusDirection(pos: Position, dir: Direction): Position =
     let (x, y) = pos
     case dir
     of north:
@@ -55,25 +55,25 @@ proc plusDirection(pos: Position, dir: Direction): Position =
     of west:
         (x - 1, y)
 
-proc inBound(position: Position): bool =
+func inBound(position: Position): bool =
     let (x, y) = position
     return 0 <= x and x < boardSize and 0 <= y and y < boardSize
 
-proc toNodeIndex(x, y: int): int =
+func toNodeIndex(x, y: int): int =
     return x + boardSize * y
 
-proc toNodeIndex(pos: (int, int)): int =
+func toNodeIndex(pos: (int, int)): int =
     let (x, y) = pos
     return toNodeIndex(x, y)
 
-proc endPosition(t: Turn): seq[Position] =
+func endPosition(t: Turn): seq[Position] =
     let y = case t
         of player1: 8
         of player2: 0
     for i in 0..<boardSize:
         result.add((i, y))
 
-proc hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
+func hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
     let p = position.toNodeIndex
     for e in turn.endPosition:
         let endIndex = e.toNodeIndex
@@ -81,7 +81,7 @@ proc hasPathToEnd(board: var Graph, position: Position, turn: Turn): bool =
             return true
     return false
 
-proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
+func canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
         vd: int): bool =
     # (ha, hb) and (hc, hd) will be blocked by the wall
     # (va, vb) and (vc, vd) are the orthogonal edges, useful to check intersecting walls
@@ -94,7 +94,7 @@ proc canPutWall(board: Graph, wallGraph: Graph, ha, hb, hc, hd, va, vb, vc,
 
     return canPutWall and not isOtherWallBlocking
 
-proc hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
+func hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
     for turn in Turn:
         if turn != t:
             let player = q.players[turn]
@@ -102,15 +102,15 @@ proc hasOtherPlayerAt(q: Quoridor, t: Turn, pos: Position): bool =
                 return true
     return false
 
-proc isMoveLegal(q: Quoridor, fromPos, toPos: Position): bool =
+func isMoveLegal(q: Quoridor, fromPos, toPos: Position): bool =
     return toPos.inBound and q.board.hasEdge(fromPos.toNodeIndex,
             toPos.toNodeIndex)
 
 # quoridor
-proc currentTurn*(q: Quoridor): Turn {.inline.} =
+func currentTurn*(q: Quoridor): Turn {.inline.} =
     q.turn
 
-proc makeQuoridor*(): Quoridor =
+func makeQuoridor*(): Quoridor =
     var players: array[Turn, Player]
     block buildPlayers:
         const middle = boardSize div 2
@@ -137,7 +137,7 @@ proc makeQuoridor*(): Quoridor =
     Quoridor(players: players, board: board, turn: player1, numPlacedWalls: 0,
             wallGraph: wallGraph)
 
-proc move*(q: var Quoridor, direction: Direction,
+func move*(q: var Quoridor, direction: Direction,
            jumpDir: Option[Direction] = none[Direction]()) =
     var player = q.players[q.turn]
     let turn = player.turn
@@ -175,7 +175,7 @@ proc move*(q: var Quoridor, direction: Direction,
         raise newException(IllegalMoveError, "player $1 cannot move to $2" % [
                 $q.turn, $toPos])
 
-proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
+func putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     if x < 0 or y < 0 or x >= boardSize - 1 or y >= boardSize - 1:
         raise newException(IllegalMoveError, "wall out of bounds")
 
@@ -226,7 +226,7 @@ proc putWall*(q: var Quoridor, wallType: WallType, x, y: int) =
     q.walls.add(Wall(wallType: wallType, position: (x, y)))
     q.numPlacedWalls.inc()
 
-proc winner*(q: Quoridor): Option[Turn] =
+func winner*(q: Quoridor): Option[Turn] =
     for t in Turn:
         let p = q.players[t]
         if p.position in t.endPosition:
